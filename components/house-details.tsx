@@ -19,6 +19,7 @@ import {
   Home,
   Coins,
   AlertCircle,
+  X,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -50,6 +51,7 @@ export function HouseDetails({ house }: HouseDetailsProps) {
   const [userPoints, setUserPoints] = useState(0)
   const [hasViewedProperty, setHasViewedProperty] = useState(false)
   const [showPointsWarning, setShowPointsWarning] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -93,6 +95,10 @@ export function HouseDetails({ house }: HouseDetailsProps) {
       setHasViewedProperty(true)
     }
   }, [house.id, router])
+
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen)
+  }
 
   const handleTopUpPoints = () => {
     router.push("/dashboard")
@@ -169,226 +175,260 @@ export function HouseDetails({ house }: HouseDetailsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-houselook-whitesmoke">
+    <div className="min-h-screen bg-gray-50">
       {/* Points Display Header */}
-      <div className="bg-white border-b border-houselook-coolGray/20 sticky top-20 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/80 sticky top-0 z-40">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <Button
               variant="ghost"
               onClick={() => router.back()}
-              className="flex items-center text-houselook-darkGray hover:text-houselook-cyan"
+              className="flex items-center text-gray-600 hover:text-cyan-600"
             >
-              <ChevronLeft className="w-4 h-4 mr-1" />
+              <ChevronLeft className="w-5 h-5 mr-1" />
               Back to Listings
             </Button>
 
-            <div className="flex items-center gap-2 bg-gradient-to-r from-houselook-cyan/10 to-houselook-blue/10 px-4 py-2 rounded-full border border-houselook-cyan/30">
-              <Coins className="w-4 h-4 text-houselook-cyan" />
-              <span className="text-sm font-semibold text-houselook-black">{userPoints} points</span>
+            <div className="flex items-center gap-2 bg-cyan-100/50 text-cyan-800 px-4 py-2 rounded-full border border-cyan-200/80">
+              <Coins className="w-5 h-5" />
+              <span className="text-sm font-semibold">{userPoints} points</span>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Success Message */}
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-green-800">
-            <Coins className="w-5 h-5" />
-            <span className="font-semibold">20 points deducted successfully!</span>
-          </div>
-          <p className="text-sm text-green-700 mt-1">You can now view all property details and contact the agent.</p>
-        </div>
+      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
+          {/* Left Column: Gallery and Details */}
+          <div className="lg:col-span-2">
+            {/* Image Gallery */}
+            <section className="mb-8">
+              <div className="relative h-96 md:h-[550px] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer group">
+                <Image
+                  src={house.images[currentImageIndex] || "/placeholder.svg"}
+                  alt={house.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  onClick={toggleFullScreen}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
 
-        {/* Image Gallery */}
-        <div className="relative mb-8">
-          <div className="relative h-96 md:h-[500px] rounded-2xl overflow-hidden">
-            <Image
-              src={house.images[currentImageIndex] || "/placeholder.svg"}
-              alt={house.title}
-              fill
-              className="object-cover"
-            />
+                {house.images.length > 1 && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full opacity-80 group-hover:opacity-100 transition-opacity"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        prevImage()
+                      }}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full opacity-80 group-hover:opacity-100 transition-opacity"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation()
+                        nextImage()
+                      }}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </>
+                )}
 
-            {house.images.length > 1 && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 rounded-full"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 rounded-full"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </>
-            )}
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button variant="secondary" size="icon" className="rounded-full">
+                    <Heart className="w-5 h-5" />
+                  </Button>
+                  <Button variant="secondary" size="icon" className="rounded-full">
+                    <Share2 className="w-5 h-5" />
+                  </Button>
+                </div>
 
-            <div className="absolute top-4 right-4 flex gap-2">
-              <Button variant="secondary" size="sm" className="rounded-full">
-                <Heart className="w-4 h-4" />
-              </Button>
-              <Button variant="secondary" size="sm" className="rounded-full">
-                <Share2 className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="absolute top-4 left-4">
-              <Badge className="bg-primary text-black">{house.available ? "Available" : "Occupied"}</Badge>
-            </div>
-          </div>
-
-          {/* Image Thumbnails */}
-          {house.images.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto">
-              {house.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 ${
-                    index === currentImageIndex ? "ring-2 ring-primary" : ""
-                  }`}
-                >
-                  <Image
-                    src={image || "/placeholder.svg"}
-                    alt={`${house.title} ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline">{house.type}</Badge>
+                <div className="absolute top-4 left-4">
+                  <Badge
+                    className={`text-white text-sm py-1 px-3 ${house.available ? "bg-green-600/90" : "bg-red-600/90"}`}
+                  >
+                    {house.available ? "Available" : "Occupied"}
+                  </Badge>
+                </div>
               </div>
-              <h1 className="text-3xl font-bold text-black mb-4">{house.title}</h1>
-              <div className="flex items-center text-gray-600 mb-4">
-                <MapPin className="w-5 h-5 mr-2" />
-                <span className="text-lg">{house.location}</span>
-              </div>
-              <div className="text-3xl font-bold text-primary mb-6">
-                KSh {house.price.toLocaleString()}
-                <span className="text-lg text-gray-500 font-normal">/month</span>
-              </div>
-            </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Description</h2>
-                <p className="text-gray-700 leading-relaxed">{house.description}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Features</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {house.features.map((feature) => (
-                    <div key={feature} className="flex items-center">
-                      <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                      <span>{feature}</span>
-                    </div>
+              {/* Image Thumbnails */}
+              {house.images.length > 1 && (
+                <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
+                  {house.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 transition-all duration-200 ${
+                        index === currentImageIndex ? "ring-4 ring-cyan-500 shadow-md" : "hover:opacity-90"
+                      }`}
+                    >
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${house.title} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </section>
 
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Amenities</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {house.amenities.map((amenity) => (
-                    <div key={amenity} className="flex items-center p-3 bg-houselook-aliceblue rounded-lg">
-                      {getAmenityIcon(amenity)}
-                      <span className="ml-3">{amenity}</span>
-                    </div>
-                  ))}
+            {/* House Info Section */}
+            <section className="space-y-8">
+              <div className="border-b pb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <Badge variant="outline" className="text-sm border-cyan-400 text-cyan-700 bg-cyan-50">
+                    {house.type}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+                <h1 className="text-4xl font-bold text-gray-900 mb-3">{house.title}</h1>
+                <div className="flex items-center text-gray-500 text-lg">
+                  <MapPin className="w-6 h-6 mr-2 text-cyan-500" />
+                  <span>{house.location}</span>
+                </div>
+              </div>
+
+              <Card className="border-gray-200/80 shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-semibold mb-4 text-gray-800">Description</h2>
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">{house.description}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200/80 shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-semibold mb-4 text-gray-800">Features</h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+                    {house.features.map((feature) => (
+                      <li key={feature} className="flex items-center">
+                        <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full mr-3"></div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200/80 shadow-sm">
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-semibold mb-4 text-gray-800">Amenities</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {house.amenities.map((amenity) => (
+                      <div
+                        key={amenity}
+                        className="flex items-center p-3 bg-gray-100/70 rounded-lg text-gray-700"
+                      >
+                        {getAmenityIcon(amenity)}
+                        <span className="ml-3 font-medium">{amenity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card>
+          {/* Right Column: Sticky Sidebar */}
+          <aside className="lg:sticky lg:top-24 h-fit">
+            <Card className="border-gray-200/80 shadow-lg">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Contact Agent</h2>
+                <div className="border-b pb-6 mb-6">
+                  <p className="text-lg text-gray-500">Rent per month</p>
+                  <p className="text-4xl font-bold text-cyan-600">
+                    KSh {house.price.toLocaleString()}
+                  </p>
+                </div>
+
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Contact Agent</h2>
                 <div className="space-y-4">
-                  <div>
-                    <p className="font-medium text-lg">{house.agent.name}</p>
-                    <p className="text-gray-600">Property Agent</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-500">
+                      {house.agent.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xl text-gray-900">{house.agent.name}</p>
+                      <p className="text-gray-500">Property Agent</p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-3 pt-4">
                     <Button
-                      className="w-full bg-primary text-black hover:bg-primary/90"
+                      className="w-full bg-cyan-600 text-white hover:bg-cyan-700 h-12 text-lg"
                       onClick={() => window.open(`tel:${house.agent.phone}`)}
                     >
-                      <Phone className="w-4 h-4 mr-2" />
+                      <Phone className="w-5 h-5 mr-2" />
                       Call Agent
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-cyan-600 text-cyan-600 hover:bg-cyan-50 h-12 text-lg"
                       onClick={() => window.open(`https://wa.me/${house.agent.whatsapp.replace("+", "")}`)}
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" />
+                      <MessageCircle className="w-5 h-5 mr-2" />
                       WhatsApp
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Location</h2>
-                <div className="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-600">Map integration would go here</p>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">{house.location}</p>
-              </CardContent>
-            </Card>
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
+
+      {isFullScreen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in"
+          onClick={toggleFullScreen}
+        >
+          <div className="relative w-full h-full max-w-5xl max-h-[90vh]">
+            <Image
+              src={house.images[currentImageIndex] || "/placeholder.svg"}
+              alt={house.title}
+              fill
+              className="object-contain"
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 rounded-full text-white bg-black/50 hover:bg-black/75"
+            onClick={toggleFullScreen}
+          >
+            <X className="w-6 h-6" />
+          </Button>
+        </div>
+      )}
 
       {/* Mobile Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-3 md:hidden shadow-top">
         <div className="flex gap-3">
           <Button
-            className="flex-1 bg-primary text-black hover:bg-primary/90"
+            className="flex-1 bg-cyan-600 text-white hover:bg-cyan-700 h-12 text-base"
             onClick={() => window.open(`tel:${house.agent.phone}`)}
           >
-            <Phone className="w-4 h-4 mr-2" />
+            <Phone className="w-5 h-5 mr-2" />
             Call
           </Button>
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-cyan-600 text-cyan-600 hover:bg-cyan-50 h-12 text-base"
             onClick={() => window.open(`https://wa.me/${house.agent.whatsapp.replace("+", "")}`)}
           >
-            <MessageCircle className="w-4 h-4 mr-2" />
+            <MessageCircle className="w-5 h-5 mr-2" />
             WhatsApp
           </Button>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

@@ -30,8 +30,14 @@ export function FilterSidebar({ onFilterChange, allHouses }: FilterSidebarProps)
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
   const [location, setLocation] = useState("")
 
-  const houseTypes = ["Bedsitter", "1 Bedroom", "2 Bedroom", "3 Bedroom", "Shared"]
+  const houseTypes =["Single","Bedsitter", "1 Bedroom", "2 Bedroom", "3 Bedroom"]
   const amenities = ["Wi-Fi", "Parking", "Security", "Water Included", "Furnished", "Garden", "Gym", "Pool"]
+
+  const suggestedLocations = [
+    "Kahawa Wendani",
+    "Kahawa Sukari",
+    "Kenyatta Market"
+  ]
 
   const applyFilters = () => {
     let filtered = allHouses
@@ -79,11 +85,23 @@ export function FilterSidebar({ onFilterChange, allHouses }: FilterSidebarProps)
         {/* Location */}
         <div>
           <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            placeholder="Enter location..."
+          <select
+            id="location-select"
+            className="w-full mt-1 mb-2 rounded border border-gray-300 text-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-houselook-cyan"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+          >
+            <option value="">All Locations</option>
+            {suggestedLocations.map((loc) => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
+          </select>
+          <Input
+            id="location"
+            placeholder="Or type a location..."
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="mt-1"
           />
         </div>
 
@@ -104,7 +122,7 @@ export function FilterSidebar({ onFilterChange, allHouses }: FilterSidebarProps)
                 <Checkbox
                   id={type}
                   checked={selectedTypes.includes(type)}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={(checked: boolean | "indeterminate") => {
                     if (checked) {
                       setSelectedTypes([...selectedTypes, type])
                     } else {
@@ -129,7 +147,7 @@ export function FilterSidebar({ onFilterChange, allHouses }: FilterSidebarProps)
                 <Checkbox
                   id={amenity}
                   checked={selectedAmenities.includes(amenity)}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={(checked: boolean | "indeterminate") => {
                     if (checked) {
                       setSelectedAmenities([...selectedAmenities, amenity])
                     } else {

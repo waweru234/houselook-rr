@@ -44,7 +44,7 @@ export function ListingsSearchBar({ onFilterChange }: ListingsSearchBarProps) {
     { name: "Furnished", icon: <Home className="w-4 h-4" /> },
   ]
 
-  const popularLocations = ["Kahawa Wendani", "Kasarani", "Thika Road", "Westlands", "Kiambu"]
+  const popularLocations = ["Kahawa Wendani", "Kahawa Sukari", "Kenyatta Market"]
 
   // Initialize from URL params
   useEffect(() => {
@@ -151,11 +151,11 @@ export function ListingsSearchBar({ onFilterChange }: ListingsSearchBarProps) {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0-5000">Under KSh 5K</SelectItem>
-                <SelectItem value="5000-10000">KSh 5K - 10K</SelectItem>
-                <SelectItem value="10000-20000">KSh 10K - 20K</SelectItem>
-                <SelectItem value="20000-30000">KSh 20K - 30K</SelectItem>
-                <SelectItem value="30000-50000">Above KSh 30K</SelectItem>
+                <SelectItem value="0-5000">Under KSh 5,000</SelectItem>
+                <SelectItem value="5000-10000">KSh 5,000 - 10,000</SelectItem>
+                <SelectItem value="10000-20000">KSh 10,000 - 20,000</SelectItem>
+                <SelectItem value="20000-30000">KSh 20,000 - 30,000</SelectItem>
+                <SelectItem value="30000-50000">Above KSh 30,000</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,11 +170,11 @@ export function ListingsSearchBar({ onFilterChange }: ListingsSearchBarProps) {
                 </div>
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="single">Single</SelectItem>
                 <SelectItem value="bedsitter">Bedsitter</SelectItem>
-                <SelectItem value="1br">1 Bedroom</SelectItem>
-                <SelectItem value="2br">2 Bedroom</SelectItem>
-                <SelectItem value="3br">3 Bedroom</SelectItem>
-                <SelectItem value="shared">Shared</SelectItem>
+                <SelectItem value="1 bedroom">1 Bedroom</SelectItem>
+                <SelectItem value="2 bedroom">2 Bedroom</SelectItem>
+                <SelectItem value="3 bedroom">3 Bedroom</SelectItem>
               </SelectContent>
             </Select>
           </div>

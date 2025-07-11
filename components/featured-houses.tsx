@@ -67,7 +67,7 @@ export function FeaturedHouses() {
               name: house.title,
               city: house.town,
               rent: house.rent,
-              bedroom: house.type,
+              bedroom: house.type === "single" ? "Single" : house.type === "bedsitter" ? "Bedsitter" : house.type === "1 bedroom" ? "1 Bedroom" : house.type === "2 bedroom" ? "2 Bedroom" : house.type === "3 bedroom" ? "3 Bedroom" : house.type,
               image1Url: house.image2Url,
               amenities: house.amenities || [house.furnished],
               vacancies: house.available,

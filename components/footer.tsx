@@ -14,7 +14,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
               <Image
-                src="/images/houselook-logo.png"
+                src="/images/ChatGPT Image Jun 22, 2025, 12_28_16 PM.png"
                 alt="HouseLook Logo"
                 width={48}
                 height={48}

@@ -18,14 +18,34 @@ import { Badge } from "@/components/ui/badge"
 import { getDatabase, ref, onValue } from "firebase/database"
 import { app } from "@/lib/firebase"
 
+// Add House and Filters interfaces
+interface House {
+  id: string
+  name: string
+  city: string
+  rent: number
+  bedroom: string
+  image1Url: string
+  amenities: string[]
+  vacancies: string
+}
+
+interface Filters {
+  location?: string
+  priceRange?: [number, number]
+  roomType?: string
+  bedrooms?: string
+  amenities?: string[]
+}
+
 export default function ListingsPage() {
   const searchParams = useSearchParams()
-  const [allHouses, setAllHouses] = useState([])
-  const [filteredHouses, setFilteredHouses] = useState([])
-  const [viewMode, setViewMode] = useState("grid")
-  const [sortBy, setSortBy] = useState("newest")
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAnimated, setIsAnimated] = useState(false)
+  const [allHouses, setAllHouses] = useState<House[]>([])
+  const [filteredHouses, setFilteredHouses] = useState<House[]>([])
+  const [viewMode, setViewMode] = useState<string>("grid")
+  const [sortBy, setSortBy] = useState<string>("newest")
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isAnimated, setIsAnimated] = useState<boolean>(false)
 
   useEffect(() => {
     const db = getDatabase(app)
@@ -60,47 +80,55 @@ export default function ListingsPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  const applyFilters = (filters) => {
+  const applyFilters = (filters: Filters) => {
     setIsLoading(true)
 
-    setTimeout(() => {
-      let filtered = allHouses
+    // Remove artificial delay for instant filtering
+    let filtered = allHouses
 
-      if (filters.location) {
-        filtered = filtered.filter((house) =>
-          house.city.toLowerCase().includes(filters.location.toLowerCase())
-        )
-      }
+    if (filters.location !== undefined && filters.location !== "") {
+      filtered = filtered.filter((house) =>
+        house.city.toLowerCase().includes(filters.location!.toLowerCase())
+      )
+    }
 
-      if (filters.priceRange) {
-        const [min, max] = filters.priceRange
-        filtered = filtered.filter((house) => house.rent >= min && house.price <= max)
-      }
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange
+      filtered = filtered.filter((house) => house.rent >= min && house.rent <= max)
+    }
 
-      if (filters.roomType) {
-        filtered = filtered.filter((house) =>
-          house.bedroom.toLowerCase().includes(filters.roomType.toLowerCase())
-        )
-      }
+    if (filters.roomType !== undefined && filters.roomType !== "") {
+      filtered = filtered.filter((house) =>
+        house.bedroom.toLowerCase().includes(filters.roomType!.toLowerCase())
+      )
+    }
 
-      if (filters.amenities && filters.amenities.length > 0) {
-        filtered = filtered.filter((house) =>
-          filters.amenities.some((amenity) => house.amenities.includes(amenity))
-        )
-      }
+    // Add bedrooms filter if present
+    if (filters.bedrooms !== undefined && filters.bedrooms !== "") {
+      filtered = filtered.filter((house) => {
+        if (filters.bedrooms === "studio") return house.bedroom.toLowerCase().includes("studio")
+        if (filters.bedrooms === "4+") return house.bedroom.replace(/\D/g, "") && Number(house.bedroom.replace(/\D/g, "")) >= 4
+        return house.bedroom.replace(/\D/g, "") === filters.bedrooms!.replace(/\D/g, "")
+      })
+    }
 
-      switch (sortBy) {
-        case "price-low":
-          filtered.sort((a, b) => a.price - b.price)
-          break
-        case "price-high":
-          filtered.sort((a, b) => b.price - a.price)
-          break
-      }
+    if (filters.amenities && Array.isArray(filters.amenities) && filters.amenities.length > 0) {
+      filtered = filtered.filter((house) =>
+        filters.amenities!.every((amenity) => house.amenities.includes(amenity))
+      )
+    }
 
-      setFilteredHouses(filtered)
-      setIsLoading(false)
-    }, 1000)
+    switch (sortBy) {
+      case "price-low":
+        filtered.sort((a, b) => a.rent - b.rent)
+        break
+      case "price-high":
+        filtered.sort((a, b) => b.rent - a.rent)
+        break
+    }
+
+    setFilteredHouses(filtered)
+    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -108,8 +136,9 @@ export default function ListingsPage() {
     const price = searchParams.get("price")
     const type = searchParams.get("type")
     const amenities = searchParams.get("amenities")
+    const bedrooms = searchParams.get("bedrooms")
 
-    const filters = {}
+    const filters: Filters = {}
     if (location) filters.location = location
     if (price) {
       const [min, max] = price.split("-").map(Number)
@@ -117,12 +146,14 @@ export default function ListingsPage() {
     }
     if (type) filters.roomType = type
     if (amenities) filters.amenities = amenities.split(",")
+    if (bedrooms) filters.bedrooms = bedrooms
 
     if (Object.keys(filters).length > 0) {
       applyFilters(filters)
     }
   }, [searchParams, sortBy])
- return (
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-houselook-aliceblue/30 via-white to-houselook-whitesmoke/50">
       {/* Stunning Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -375,6 +406,4 @@ export default function ListingsPage() {
       </div>
     </div>
   )
-  // You can continue your JSX return block here using `filteredHouses` as the data source
-  // Example: {filteredHouses.map(house => <HouseCard house={house} />)}
 }

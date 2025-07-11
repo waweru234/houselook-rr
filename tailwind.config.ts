@@ -96,8 +96,9 @@ const config: Config = {
         "indigo-glow": "0 0 20px rgba(111, 0, 255, 0.3)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        heading: ["Poppins", "system-ui", "sans-serif"],
+        sans: ["var(--font-noto-serif)", "system-ui", "sans-serif"],
+        heading: ["var(--font-bebas-neue)", "system-ui", "sans-serif"],
+        display: ["var(--font-rowdies)", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

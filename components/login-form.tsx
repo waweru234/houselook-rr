@@ -32,8 +32,12 @@ const handleSubmit = async (e: React.FormEvent) => {
   setIsLoading(true)
 
   try {
-    await loginWithEmail(email, password)
-    router.push("/dashboard")
+    const user = await loginWithEmail(email, password)
+    if (user.isAdmin) {
+      router.push("/admin")
+    } else {
+      router.push("/dashboard")
+    }
   } catch (err) {
     console.error(err)
     alert("Login failed. Check credentials.")
@@ -45,8 +49,12 @@ const handleSubmit = async (e: React.FormEvent) => {
 const handleGoogleLogin = async () => {
   setIsLoading(true)
   try {
-    await loginWithGoogle()
-    router.push("/dashboard")
+    const user = await loginWithGoogle()
+    if (user.isAdmin) {
+      router.push("/admin")
+    } else {
+      router.push("/dashboard")
+    }
   } catch (err) {
     console.error(err)
     alert("Google login failed")
@@ -89,14 +97,14 @@ const handleGoogleLogin = async () => {
                 className="w-full h-full object-contain drop-shadow-lg"
               />
             </div>
-            <span className="text-3xl font-black font-heading tracking-tight">
+            <span className="text-2xl font-black font-heading tracking-tight">
               <span className="text-houselook-black">House</span>
               <span className="text-houselook-cyan">Look</span>
             </span>
           </Link>
 
-          <h1 className="text-4xl font-black font-heading text-houselook-black mb-2">Welcome Back! 👋</h1>
-          <p className="text-lg text-houselook-darkGray">Sign in to continue your house hunting journey</p>
+          <h1 className="text-3xl font-black font-heading text-houselook-black mb-2">Welcome Back! 👋</h1>
+          <p className="text-base text-houselook-darkGray">Sign in to continue your house hunting journey</p>
         </div>
 
         {/* Login Card */}
@@ -104,7 +112,7 @@ const handleGoogleLogin = async () => {
           className={`bg-white/80 backdrop-blur-md shadow-soft-xl border border-houselook-coolGray/20 rounded-2xl transition-all duration-1000 delay-300 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-houselook-black font-heading">Sign In</CardTitle>
+            <CardTitle className="text-xl font-bold text-houselook-black font-heading">Sign In</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Google Login Button */}

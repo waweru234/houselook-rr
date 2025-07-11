@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Users,
   TrendingUp,
@@ -35,6 +35,7 @@ import {
   ResponsiveContainer,
   Pie,
 } from "recharts"
+import { getAdminStatistics } from "@/lib/houses"
 
 // Mock data - replace with real data from your backend
 const registrationData = [
@@ -115,27 +116,53 @@ const achievements = [
     icon: Crown,
     color: "from-purple-500 to-indigo-600",
   },
-  { title: "Property Master", description: "500+ properties listed", icon: Award, color: "from-green-400 to-blue-500" },
+  { title: "Property Master", description: "500+ properties listed", icon: Award, color: "from-green-400 to-cyan-500" },
 ]
+
+function convertToCSV(data: any[]) {
+  if (data.length === 0) {
+    return ""
+  }
+  const keys = Object.keys(data[0])
+  const header = keys.join(",")
+  const rows = data.map((row) => {
+    return keys
+      .map((key) => {
+        let value = row[key]
+        if (typeof value === "string" && value.includes(",")) {
+          value = `"${value}"`
+        }
+        return value
+      })
+      .join(",")
+  })
+  return [header, ...rows].join("\n")
+}
 
 export function AdminDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("30days")
   const [searchTerm, setSearchTerm] = useState("")
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [stats, setStats] = useState<{ totalUsers: number; totalProperties: number; totalRevenue: number } | null>(null)
+  const [loadingStats, setLoadingStats] = useState(true)
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
 
+  useEffect(() => {
+    setLoadingStats(true)
+    getAdminStatistics().then((data) => {
+      setStats(data)
+      setLoadingStats(false)
+    })
+  }, [])
+
   const downloadReport = (type: string) => {
     // Mock download functionality
     const data = type === "users" ? registrationData : revenueData
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      Object.keys(data[0]).join(",") +
-      "\n" +
-      data.map((row) => Object.values(row).join(",")).join("\n")
+    const csvContent = "data:text/csv;charset=utf-8," + convertToCSV(data)
 
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement("a")
@@ -248,7 +275,7 @@ export function AdminDashboard() {
             </div>
             <div>
               <p className="text-houselook-coolgray text-sm font-medium mb-1">Total Users</p>
-              <p className="text-4xl font-black text-houselook-darkgray mb-2">1,247</p>
+              <p className="text-4xl font-black text-houselook-darkgray mb-2">{loadingStats ? '...' : stats?.totalUsers ?? 0}</p>
               <p className="text-xs text-houselook-coolgray">↗ Growth this month</p>
             </div>
           </div>
@@ -267,7 +294,7 @@ export function AdminDashboard() {
             </div>
             <div>
               <p className="text-houselook-coolgray text-sm font-medium mb-1">Properties Listed</p>
-              <p className="text-4xl font-black text-houselook-darkgray mb-2">856</p>
+              <p className="text-4xl font-black text-houselook-darkgray mb-2">{loadingStats ? '...' : stats?.totalProperties ?? 0}</p>
               <p className="text-xs text-houselook-coolgray">↗ New listings</p>
             </div>
           </div>
@@ -286,7 +313,7 @@ export function AdminDashboard() {
             </div>
             <div>
               <p className="text-houselook-coolgray text-sm font-medium mb-1">Monthly Revenue</p>
-              <p className="text-4xl font-black text-houselook-darkgray mb-2">KES 128K</p>
+              <p className="text-4xl font-black text-houselook-darkgray mb-2">KES {loadingStats ? '...' : (stats?.totalRevenue?.toLocaleString() ?? 0)}</p>
               <p className="text-xs text-houselook-coolgray">↗ Revenue growth</p>
             </div>
           </div>
@@ -497,7 +524,7 @@ export function AdminDashboard() {
                       </div>
                       <div className="w-full bg-gray-700 rounded-full h-2">
                         <div
-                          className="bg-gradient-to-r from-cyan-400 to-blue-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                          className="bg-gradient-to-r from-cyan-400 to-cyan-500 h-2 rounded-full transition-all duration-1000 ease-out"
                           style={{ width: `${Math.min(item.growth * 3, 100)}%` }}
                         ></div>
                       </div>
@@ -631,7 +658,7 @@ export function AdminDashboard() {
                   <p className="text-gray-400 text-xs">Growth Streak</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-gradient-to-r from-cyan-400 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="bg-gradient-to-r from-cyan-400 to-cyan-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Star className="w-6 h-6 text-white" />
                   </div>
                   <p className="text-cyan-400 font-bold text-sm">2,847 XP</p>

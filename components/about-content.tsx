@@ -47,16 +47,16 @@ export function AboutContent() {
         <div className="mb-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-6">
-                🏠 About <span className="bg-gradient-primary bg-clip-text text-transparent">HouseLook</span>
+              <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-6">
+                🏠 About <span className="font-display bg-gradient-primary bg-clip-text text-transparent">HouseLook</span>
               </h2>
-              <div className="prose prose-lg text-houselook-darkGray leading-relaxed space-y-4">
+              <div className="prose text-houselook-darkGray leading-relaxed space-y-4">
                 <p>Welcome to HouseLook — your home-hunting partner.</p>
                 <p>
                   Finding a house in Kenya, especially as a young person, can be stressful. Endless WhatsApp groups,
                   fake agents, outdated listings, and high broker fees — we've all been there.
                 </p>
-                <p className="text-houselook-cyan font-semibold text-xl">HouseLook was created to change that.</p>
+                <p className="text-houselook-cyan font-semibold text-lg">HouseLook was created to change that.</p>
               </div>
             </div>
 
@@ -79,10 +79,10 @@ export function AboutContent() {
         {/* Creators Section */}
         <div className="mb-20">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-4">
-              👋 Meet the <span className="bg-gradient-secondary bg-clip-text text-transparent">Creators</span>
+            <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-4">
+              👋 Meet the <span className="font-display bg-gradient-secondary bg-clip-text text-transparent">Creators</span>
             </h2>
-            <p className="text-xl text-houselook-darkGray max-w-3xl mx-auto">
+            <p className="text-lg text-houselook-darkGray max-w-3xl mx-auto">
               We are Christopher Waweru and Tom Brown Obande, students at Kenyatta University, passionate about tech and
               solving everyday problems that young people face in Kenya.
             </p>
@@ -94,7 +94,7 @@ export function AboutContent() {
                 <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl font-black text-houselook-white font-heading">CW</span>
                 </div>
-                <h3 className="text-2xl font-bold text-houselook-black mb-2 font-heading">Christopher Waweru</h3>
+                <h3 className="text-xl font-bold text-houselook-black mb-2 font-heading">Christopher Waweru</h3>
                 <p className="text-houselook-coolGray mb-4">Co-Founder & Developer</p>
                 <p className="text-houselook-darkGray">
                   Passionate about creating tech solutions that solve real problems for young Kenyans.
@@ -107,7 +107,7 @@ export function AboutContent() {
                 <div className="w-24 h-24 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl font-black text-houselook-white font-heading">TB</span>
                 </div>
-                <h3 className="text-2xl font-bold text-houselook-black mb-2 font-heading">Tom Brown Obande</h3>
+                <h3 className="text-xl font-bold text-houselook-black mb-2 font-heading">Tom Brown Obande</h3>
                 <p className="text-houselook-coolGray mb-4">Co-Founder & Developer</p>
                 <p className="text-houselook-darkGray">
                   Dedicated to building user-friendly platforms that make life easier for students and young
@@ -118,7 +118,7 @@ export function AboutContent() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-lg text-houselook-darkGray max-w-2xl mx-auto">
+            <p className="text-base text-houselook-darkGray max-w-2xl mx-auto">
               In 2025, we teamed up to build HouseLook, a real estate platform designed specifically for students, young
               professionals, and Gen Z renters looking for housing in Kenya.
             </p>
@@ -149,10 +149,10 @@ export function AboutContent() {
             </div>
 
             <div className="order-1 lg:order-2">
-              <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-6">
-                💡 Why We Built <span className="bg-gradient-primary bg-clip-text text-transparent">HouseLook</span>
+              <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-6">
+                💡 Why We Built <span className="font-display bg-gradient-primary bg-clip-text text-transparent">HouseLook</span>
               </h2>
-              <div className="prose prose-lg text-houselook-darkGray leading-relaxed space-y-4">
+              <div className="prose text-houselook-darkGray leading-relaxed space-y-4">
                 <p>
                   We've both experienced how hard it can be to find a decent place to stay — whether you're moving into
                   campus hostels, looking for a bedsitter near town, or just trying to avoid being scammed by fake
@@ -174,10 +174,10 @@ export function AboutContent() {
               <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-8">
                 <Target className="w-10 h-10 text-houselook-white" />
               </div>
-              <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-6">
-                🎯 Our <span className="bg-gradient-secondary bg-clip-text text-transparent">Mission</span>
+              <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-6">
+                🎯 Our <span className="font-display bg-gradient-secondary bg-clip-text text-transparent">Mission</span>
               </h2>
-              <p className="text-2xl text-houselook-darkGray mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl text-houselook-darkGray mb-8 max-w-3xl mx-auto leading-relaxed">
                 To make house-hunting <span className="text-houselook-cyan font-semibold">easier</span>,{" "}
                 <span className="text-houselook-indigo font-semibold">safer</span>, and more{" "}
                 <span className="text-houselook-cyan font-semibold">honest</span> for young Kenyans.
@@ -193,11 +193,11 @@ export function AboutContent() {
         {/* What Makes Us Different */}
         <div className="mb-20">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-4">
+            <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-4">
               🧩 What Makes HouseLook{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">Different</span>
+              <span className="font-display bg-gradient-primary bg-clip-text text-transparent">Different</span>
             </h2>
-            <p className="text-xl text-houselook-darkGray max-w-3xl mx-auto">
+            <p className="text-lg text-houselook-darkGray max-w-3xl mx-auto">
               We're not just another property platform. We're built by young people, for young people.
             </p>
           </div>
@@ -212,7 +212,7 @@ export function AboutContent() {
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                     <div className="text-houselook-white">{feature.icon}</div>
                   </div>
-                  <h3 className="text-xl font-bold text-houselook-black mb-3 font-heading">{feature.title}</h3>
+                  <h3 className="text-lg font-bold text-houselook-black mb-3 font-heading">{feature.title}</h3>
                   <p className="text-houselook-darkGray leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -227,14 +227,14 @@ export function AboutContent() {
               <div className="w-20 h-20 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto mb-8">
                 <Rocket className="w-10 h-10 text-houselook-white" />
               </div>
-              <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-6">
-                🚀 This is Just the <span className="bg-gradient-primary bg-clip-text text-transparent">Beginning</span>
+              <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-6">
+                🚀 This is Just the <span className="font-display bg-gradient-primary bg-clip-text text-transparent">Beginning</span>
               </h2>
-              <p className="text-xl text-houselook-darkGray mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg text-houselook-darkGray mb-8 max-w-3xl mx-auto leading-relaxed">
                 HouseLook is still growing. We're working hard to bring you better features, more listings, and
                 collaborations with trusted landlords and agents.
               </p>
-              <p className="text-lg text-houselook-coolGray">
+              <p className="text-base text-houselook-coolGray">
                 We're excited for what's ahead — and we're glad you're here with us.
               </p>
             </CardContent>
@@ -243,10 +243,10 @@ export function AboutContent() {
 
         {/* Connect Section */}
         <div className="text-center">
-          <h2 className="text-4xl md:text-5xl font-black font-heading text-houselook-black mb-8">
-            🤝 Let's <span className="bg-gradient-secondary bg-clip-text text-transparent">Connect</span>
+          <h2 className="text-3xl md:text-4xl font-black font-heading text-houselook-black mb-8">
+            🤝 Let's <span className="font-display bg-gradient-secondary bg-clip-text text-transparent">Connect</span>
           </h2>
-          <p className="text-xl text-houselook-darkGray mb-8 max-w-3xl mx-auto">
+          <p className="text-lg text-houselook-darkGray mb-8 max-w-3xl mx-auto">
             Whether you're a student looking for a place, a landlord wanting to list properties, or a developer who
             wants to collaborate — reach out! We'd love to hear from you.
           </p>

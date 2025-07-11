@@ -65,12 +65,12 @@ export function AboutHero() {
           <span className="text-houselook-white font-semibold font-heading">About HouseLook</span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black font-heading leading-tight mb-6">
+        <h1 className="text-4xl md:text-6xl font-black font-heading leading-tight mb-6">
           <span className="text-houselook-white">Meet </span>
-          <span className="bg-gradient-primary bg-clip-text text-transparent">HouseLook</span>
+          <span className="bg-gradient-primary bg-clip-text text-transparent font-display">HouseLook</span>
         </h1>
 
-        <p className="text-xl md:text-2xl text-houselook-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-houselook-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
           Your <span className="text-houselook-cyan font-semibold">home-hunting partner</span> designed by students, for{" "}
           <span className="text-houselook-indigo font-semibold">young Kenyans</span> who deserve better.
         </p>

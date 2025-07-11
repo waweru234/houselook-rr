@@ -33,34 +33,20 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { getCurrentUser } from "@/lib/auth"
+import { getUserProperties, getSavedHouses, getUserPoints, setUserPoints } from "@/lib/houses"
 
 export function DashboardContent() {
   const [isAnimated, setIsAnimated] = useState(false)
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
-  const [userProperties, setUserProperties] = useState([
-    {
-      id: 1,
-      title: "Modern 2BR Apartment in Westlands",
-      status: "Active",
-      dateSubmitted: "2025-01-10",
-      views: 45,
-      inquiries: 8,
-    },
-    {
-      id: 2,
-      title: "Spacious 3BR House in Karen",
-      status: "Under Review",
-      dateSubmitted: "2025-01-12",
-      views: 12,
-      inquiries: 2,
-    },
-  ])
+  const [user, setUser] = useState<{ name: string; email: string; uid: string } | null>(null)
+  const [userProperties, setUserProperties] = useState<any[]>([])
 
-  const [userPoints, setUserPoints] = useState(100) // Starting points
+  const [userPoints, setUserPointsState] = useState(100) // Starting points
   const [pointsToAdd, setPointsToAdd] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showTopUp, setShowTopUp] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState("")
+  const [savedCount, setSavedCount] = useState(0)
 
   // Add phone number formatting function
   const formatPhoneNumber = (value: string) => {
@@ -111,13 +97,10 @@ export function DashboardContent() {
 
     setIsLoading(true)
 
-    // Simulate M-Pesa payment process
-    setTimeout(() => {
+    setTimeout(async () => {
       const newPoints = userPoints + Number.parseInt(pointsToAdd)
       const transactionCode = `QH${Math.random().toString(36).substr(2, 8).toUpperCase()}`
-
-      setUserPoints(newPoints)
-      localStorage.setItem("userPoints", newPoints.toString())
+      await updateUserPoints(newPoints)
       setPointsToAdd("")
       setMpesaPhone("")
       setShowTopUp(false)
@@ -164,39 +147,52 @@ Thank you for using HouseLook! 🏠`,
     }, 100)
 
     // Load user data
-    const userData = localStorage.getItem("userData")
+    const userData = getCurrentUser()
     if (userData) {
-      setUser(JSON.parse(userData))
+      setUser(userData)
+      // Fetch properties from Firebase
+      getUserProperties(userData.uid).then((props) => {
+        setUserProperties(props)
+      })
+      // Fetch saved houses count
+      getSavedHouses(userData.uid).then((ids) => {
+        setSavedCount(ids.length)
+      })
+      // Fetch user points
+      getUserPoints(userData.uid).then((points) => {
+        setUserPointsState(points)
+      })
     }
-
-    // Load user points from localStorage
-    const savedPoints = localStorage.getItem("userPoints")
-    if (savedPoints) {
-      setUserPoints(Number.parseInt(savedPoints))
-    }
-
     return () => clearTimeout(timer)
   }, [])
 
+  // Helper to update points in DB and state
+  const updateUserPoints = async (newPoints: number) => {
+    if (user) {
+      await setUserPoints(user.uid, newPoints)
+      setUserPointsState(newPoints)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-houselook-aliceblue via-houselook-white to-houselook-whitesmoke pt-24 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-houselook-aliceblue via-houselook-white to-houselook-whitesmoke pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Welcome Header */}
         <div
-          className={`mb-8 transition-all duration-1000 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`mb-6 transition-all duration-1000 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-black text-houselook-black mb-2 font-heading">
+              <h1 className="text-xl md:text-2xl font-black text-houselook-black mb-1 font-heading">
                 Welcome back, {user?.name || "User"}! 👋
               </h1>
-              <p className="text-xl text-houselook-darkGray">Manage your properties and track your success</p>
+              <p className="text-sm text-houselook-darkGray">Manage your properties and track your success</p>
             </div>
 
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="border-houselook-coolGray/30 text-houselook-darkGray hover:text-houselook-cyan hover:border-houselook-cyan/50 transition-all duration-300 rounded-lg"
+              className="border-houselook-coolGray/30 text-houselook-darkGray hover:text-houselook-cyan hover:border-houselook-cyan/50 transition-all duration-300 rounded-lg text-sm"
             >
               Logout
             </Button>
@@ -205,36 +201,36 @@ Thank you for using HouseLook! 🏠`,
 
         {/* Points Management Section */}
         <div
-          className={`mb-8 transition-all duration-1000 delay-200 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`mb-6 transition-all duration-1000 delay-200 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Points Overview */}
-            <Card className="lg:col-span-2 bg-houselook-white shadow-soft-xl border-0 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl font-bold text-houselook-black font-heading">
-                  <Coins className="w-5 h-5 text-houselook-cyan" />
+            <Card className="lg:col-span-2 bg-houselook-white shadow-soft-xl border-0 rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-houselook-black font-heading">
+                  <Coins className="w-4 h-4 text-houselook-cyan" />
                   Points Overview
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-gradient-to-br from-houselook-cyan/5 to-houselook-teal/5 rounded-xl">
-                    <div className="text-2xl font-black text-houselook-cyan mb-1">{userPoints}</div>
-                    <div className="text-sm text-houselook-coolGray">Available Points</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                  <div className="text-center p-3 bg-gradient-to-br from-houselook-cyan/5 to-houselook-teal/5 rounded-lg">
+                    <div className="text-lg font-black text-houselook-cyan mb-1 font-heading">{userPoints}</div>
+                    <div className="text-xs text-houselook-coolGray">Available Points</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                    <div className="text-2xl font-black text-green-600 mb-1">150</div>
-                    <div className="text-sm text-houselook-coolGray">Total Earned</div>
+                  <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
+                    <div className="text-lg font-black text-green-600 mb-1 font-heading">150</div>
+                    <div className="text-xs text-houselook-coolGray">Total Earned</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-xl">
-                    <div className="text-2xl font-black text-orange-600 mb-1">50</div>
-                    <div className="text-sm text-houselook-coolGray">Points Used</div>
+                  <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg">
+                    <div className="text-lg font-black text-orange-600 mb-1 font-heading">50</div>
+                    <div className="text-xs text-houselook-coolGray">Points Used</div>
                   </div>
                 </div>
 
-                <div className="bg-houselook-aliceblue/50 rounded-xl p-4">
-                  <h4 className="font-semibold text-houselook-black mb-2">How Points Work:</h4>
-                  <ul className="space-y-1 text-sm text-houselook-darkGray">
+                <div className="bg-houselook-aliceblue/50 rounded-lg p-3">
+                  <h4 className="font-semibold text-houselook-black mb-2 text-xs">How Points Work:</h4>
+                  <ul className="space-y-1 text-xs text-houselook-darkGray">
                     <li>
                       • <strong>20 points</strong> to view house details
                     </li>
@@ -253,29 +249,29 @@ Thank you for using HouseLook! 🏠`,
             </Card>
 
             {/* Top Up Points */}
-            <Card className="bg-houselook-white shadow-soft-xl border-0 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl font-bold text-houselook-black font-heading">
-                  <CreditCard className="w-5 h-5 text-houselook-cyan" />
+            <Card className="bg-houselook-white shadow-soft-xl border-0 rounded-xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-houselook-black font-heading">
+                  <CreditCard className="w-4 h-4 text-houselook-cyan" />
                   Add Points
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {!showTopUp ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-houselook-cyan/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Smartphone className="w-8 h-8 text-houselook-cyan" />
+                      <div className="w-12 h-12 bg-houselook-cyan/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Smartphone className="w-6 h-6 text-houselook-cyan" />
                       </div>
-                      <p className="text-houselook-darkGray mb-4">Top up your points using M-Pesa</p>
+                      <p className="text-houselook-darkGray mb-3 text-sm">Top up your points using M-Pesa</p>
                     </div>
 
                     <div className="space-y-2">
                       <Button
                         onClick={() => setShowTopUp(true)}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-all duration-300"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition-all duration-300 text-sm"
                       >
-                        <Smartphone className="w-4 h-4 mr-2" />
+                        <Smartphone className="w-3 h-3 mr-2" />
                         Pay with M-Pesa
                       </Button>
 
@@ -306,9 +302,9 @@ Thank you for using HouseLook! 🏠`,
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
-                      <Label htmlFor="phone" className="text-sm font-semibold text-houselook-darkGray mb-2 block">
+                      <Label htmlFor="phone" className="text-xs font-semibold text-houselook-darkGray mb-1 block">
                         M-Pesa Phone Number
                       </Label>
                       <Input
@@ -317,7 +313,7 @@ Thank you for using HouseLook! 🏠`,
                         value={mpesaPhone}
                         onChange={(e) => setMpesaPhone(e.target.value)}
                         placeholder="0700123456 or 254700123456"
-                        className="border-houselook-aliceblue focus:border-houselook-cyan rounded-xl text-lg font-semibold"
+                        className="border-houselook-aliceblue focus:border-houselook-cyan rounded-lg text-sm font-semibold"
                       />
                       <p className="text-xs text-houselook-coolGray mt-1">
                         ✅ Only Safaricom M-Pesa numbers (07XX, 01XX) are supported
@@ -325,7 +321,7 @@ Thank you for using HouseLook! 🏠`,
                     </div>
 
                     <div>
-                      <Label htmlFor="points" className="text-sm font-semibold text-houselook-darkGray mb-2 block">
+                      <Label htmlFor="points" className="text-xs font-semibold text-houselook-darkGray mb-1 block">
                         Points to Add (Min: 10)
                       </Label>
                       <Input
@@ -335,13 +331,13 @@ Thank you for using HouseLook! 🏠`,
                         value={pointsToAdd}
                         onChange={(e) => setPointsToAdd(e.target.value)}
                         placeholder="Enter points amount"
-                        className="border-houselook-aliceblue focus:border-houselook-cyan rounded-xl"
+                        className="border-houselook-aliceblue focus:border-houselook-cyan rounded-lg text-sm"
                       />
-                      {pointsToAdd && <p className="text-sm text-houselook-coolGray mt-1">Cost: KSh {pointsToAdd}</p>}
+                      {pointsToAdd && <p className="text-xs text-houselook-coolGray mt-1">Cost: KSh {pointsToAdd}</p>}
                     </div>
 
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                      <p className="text-sm text-green-800 font-medium">Payment Process:</p>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p className="text-xs text-green-800 font-medium">Payment Process:</p>
                       <ol className="text-xs text-green-700 mt-1 space-y-1">
                         <li>1. Enter your M-Pesa phone number</li>
                         <li>2. Click "Send M-Pesa Request"</li>
@@ -354,16 +350,16 @@ Thank you for using HouseLook! 🏠`,
                       <Button
                         onClick={handleMpesaPayment}
                         disabled={isLoading || !pointsToAdd || !mpesaPhone || Number.parseInt(pointsToAdd) < 10}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-all duration-300"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition-all duration-300 text-sm"
                       >
                         {isLoading ? (
                           <div className="flex items-center">
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                             Sending M-Pesa Request...
                           </div>
                         ) : (
                           <div className="flex items-center">
-                            <Smartphone className="w-4 h-4 mr-2" />
+                            <Smartphone className="w-3 h-3 mr-2" />
                             Send M-Pesa Request - KSh {pointsToAdd || 0}
                           </div>
                         )}
@@ -376,7 +372,7 @@ Thank you for using HouseLook! 🏠`,
                           setPointsToAdd("")
                           setMpesaPhone("")
                         }}
-                        className="w-full"
+                        className="w-full text-sm"
                       >
                         Cancel
                       </Button>
@@ -390,25 +386,25 @@ Thank you for using HouseLook! 🏠`,
 
         {/* Quick Stats */}
         <div
-          className={`grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 transition-all duration-1000 delay-300 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 transition-all duration-1000 delay-300 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <Card className="bg-houselook-white shadow-soft border-0 rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-houselook-cyan/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Home className="w-6 h-6 text-houselook-cyan" />
+          <Card className="bg-houselook-white shadow-soft border-0 rounded-xl">
+            <CardContent className="p-4 text-center">
+              <div className="w-10 h-10 bg-houselook-cyan/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Home className="w-5 h-5 text-houselook-cyan" />
               </div>
-              <h3 className="text-2xl font-bold text-houselook-black">{userProperties.length}</h3>
-              <p className="text-houselook-coolGray font-medium">Properties Listed</p>
+              <h3 className="text-lg font-bold text-houselook-black font-heading">{userProperties.length}</h3>
+              <p className="text-houselook-coolGray font-medium text-sm">Properties Listed</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-houselook-white shadow-soft border-0 rounded-2xl">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-houselook-teal/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-6 h-6 text-houselook-teal" />
+          <Card className="bg-houselook-white shadow-soft border-0 rounded-xl">
+            <CardContent className="p-4 text-center">
+              <div className="w-10 h-10 bg-houselook-teal/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Heart className="w-5 h-5 text-houselook-teal" />
               </div>
-              <h3 className="text-2xl font-bold text-houselook-black">5</h3>
-              <p className="text-houselook-coolGray font-medium">Houses Saved</p>
+              <h3 className="text-lg font-bold text-houselook-black font-heading">{savedCount}</h3>
+              <p className="text-houselook-coolGray font-medium text-sm">Houses Saved</p>
             </CardContent>
           </Card>
         </div>
@@ -419,7 +415,7 @@ Thank you for using HouseLook! 🏠`,
         >
           <Card className="bg-houselook-white shadow-soft-xl border-0 rounded-2xl">
             <CardHeader>
-              <CardTitle className="text-2xl font-black text-houselook-black font-heading">Your Properties</CardTitle>
+              <CardTitle className="text-xl font-black text-houselook-black font-heading">Your Properties</CardTitle>
             </CardHeader>
             <CardContent>
               {userProperties.length > 0 ? (
@@ -430,20 +426,26 @@ Thank you for using HouseLook! 🏠`,
                       className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-houselook-aliceblue/30 rounded-xl border border-houselook-coolGray/10"
                     >
                       <div className="flex-1">
-                        <h3 className="font-bold text-houselook-black text-lg mb-2">{property.title}</h3>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-houselook-coolGray">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            Submitted: {property.dateSubmitted}
-                          </div>
-                          <div className="flex items-center">
-                            <Eye className="w-4 h-4 mr-1" />
-                            {property.views} views
-                          </div>
-                          <div className="flex items-center">
-                            <Bell className="w-4 h-4 mr-1" />
-                            {property.inquiries} inquiries
-                          </div>
+                        <h3 className="font-bold text-houselook-black text-base mb-2 font-heading">{property.title || property.name || 'Untitled Property'}</h3>
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-houselook-coolGray">
+                          {property.dateSubmitted && (
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              Submitted: {property.dateSubmitted}
+                            </div>
+                          )}
+                          {property.views !== undefined && (
+                            <div className="flex items-center">
+                              <Eye className="w-4 h-4 mr-1" />
+                              {property.views} views
+                            </div>
+                          )}
+                          {property.inquiries !== undefined && (
+                            <div className="flex items-center">
+                              <Bell className="w-4 h-4 mr-1" />
+                              {property.inquiries} inquiries
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -455,7 +457,7 @@ Thank you for using HouseLook! 🏠`,
                               : "bg-houselook-warning/10 text-houselook-warning border-houselook-warning/20"
                           }
                         >
-                          {property.status}
+                          {property.status || 'Unknown'}
                         </Badge>
                       </div>
                     </div>
@@ -485,7 +487,7 @@ Thank you for using HouseLook! 🏠`,
         <div
           className={`mb-8 transition-all duration-1000 delay-600 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
-          <h2 className="text-2xl font-bold text-houselook-black mb-6 font-heading">Quick Actions</h2>
+          <h2 className="text-xl font-bold text-houselook-black mb-6 font-heading">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Button
               onClick={() => router.push("/list-property")}
@@ -525,7 +527,7 @@ Thank you for using HouseLook! 🏠`,
         >
           <Card className="bg-houselook-white shadow-soft-xl border-0 rounded-2xl border-l-4 border-l-houselook-error">
             <CardHeader>
-              <CardTitle className="text-xl font-black text-houselook-black font-heading flex items-center">
+              <CardTitle className="text-lg font-black text-houselook-black font-heading flex items-center">
                 <AlertTriangle className="w-6 h-6 mr-3 text-houselook-error" />
                 Account Management
               </CardTitle>
@@ -551,7 +553,7 @@ Thank you for using HouseLook! 🏠`,
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-houselook-white border-0 shadow-soft-xl rounded-2xl">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-black text-houselook-black font-heading flex items-center">
+                      <AlertDialogTitle className="text-lg font-black text-houselook-black font-heading flex items-center">
                         <AlertTriangle className="w-6 h-6 mr-3 text-houselook-error" />
                         Delete Account Permanently?
                       </AlertDialogTitle>

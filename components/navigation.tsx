@@ -4,14 +4,14 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Home, Search, Info, Plus, User, LogIn, UserPlus } from "lucide-react"
+import { Menu, X, Home, Search, Info, Plus, User, LogIn, UserPlus, Heart } from "lucide-react"
 import Image from "next/image"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
+  const [user, setUser] = useState<{ name: string; email: string; isAdmin?: boolean } | null>(null)
 
   // Check authentication status
   useEffect(() => {
@@ -21,7 +21,12 @@ export function Navigation() {
 
       if (authStatus === "true" && userData) {
         setIsAuthenticated(true)
-        setUser(JSON.parse(userData))
+        try {
+          const parsed = JSON.parse(userData)
+          setUser(parsed)
+        } catch {
+          setUser(null)
+        }
       } else {
         setIsAuthenticated(false)
         setUser(null)
@@ -38,18 +43,22 @@ export function Navigation() {
       }
     }
 
-    window.addEventListener("storage", handleStorageChange)
-
-    // Also listen for custom events (for same-tab updates)
+    // Listen for custom events (for same-tab updates)
     const handleAuthChange = () => {
       checkAuth()
     }
 
+    // Listen for both storage events and custom events
+    window.addEventListener("storage", handleStorageChange)
     window.addEventListener("authStateChanged", handleAuthChange)
+
+    // Also set up a periodic check for immediate updates
+    const interval = setInterval(checkAuth, 1000)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
       window.removeEventListener("authStateChanged", handleAuthChange)
+      clearInterval(interval)
     }
   }, [])
 
@@ -60,219 +69,99 @@ export function Navigation() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 font-sans">
-      {/* Modern background with blur */}
-      <div className="absolute inset-0 backdrop-blur-xl border-b border-houselook-coolGray/20 shadow-soft"></div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-all duration-300 relative">
-              <div className="absolute inset-0 bg-houselook-cyan rounded-xl opacity-0 group-hover:opacity-20 transition-all duration-500 blur-sm"></div>
+    <nav className="fixed top-0 left-0 right-0 z-50 font-sans pointer-events-none">
+      {/* No background, border, or shadow - only floating content */}
+      <div className="relative max-w-7xl mx-auto px-4 pointer-events-auto">
+        <div className="flex justify-between items-center h-16">
+          {/* Compact Logo */}
+          <Link href="/" className="flex items-center space-x-2 group" style={{ pointerEvents: 'auto' }}>
+            <div className="w-12 h-12 flex items-center justify-center relative">
               <Image
-                src="/images/houselook-logo.png"
+                src="/images/placeholder-logo.png"
                 alt="HouseLook Logo"
                 width={48}
                 height={48}
-                className="w-full h-full object-contain drop-shadow-lg relative z-10"
+                className="w-full h-full object-contain"
+                priority
               />
             </div>
-            <div className="relative">
-              <span className="text-2xl font-black font-heading tracking-tight">
-                <span className="text-houselook-blue">House</span>
-                <span className="text-houselook-cyan">Look</span>
-              </span>
-            </div>
+            <span className="text-xl font-black tracking-tight text-houselook-cyan" style={{ fontFamily: 'Perpetua, serif' }}>HouseLook</span>
           </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-center flex-1">
-            <div className="flex items-center space-x-6">
-              <Link
-                href="/"
-                className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-houselook-indigo${
-                  isActive("/")
-                    ? "text-houselook-white bg-houselook-cyan shadow-cyan-glow"
-                    : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-              >
-                <Home className="w-4 h-4 mr-2 " />
-                Home
-              </Link>
-
-              <Link
-                href="/listings"
-                className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-houselook-indigo${
-                  isActive("/listings")
-                    ? "text-houselook-white bg-houselook-cyan shadow-cyan-glow"
-                    : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Browse Houses
-              </Link>
-
-              <Link
-                href="/about"
-                className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-houselook-indigo${
-                  isActive("/about")
-                    ? "text-houselook-white bg-houselook-cyan shadow-cyan-glow"
-                    : "text-houselook-blue hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-              >
-                <Info className="w-4 h-4 mr-2" />
-                About
-              </Link>
-            </div>
-          </div>
-
-          {/* Authentication Section */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center space-x-6" style={{ pointerEvents: 'auto' }}>
+            <Link href="/" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}>Home</Link>
+            <Link href="/listings" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/listings") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}>Browse</Link>
+            <Link href="/saved" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/saved") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }}>Saved</Link>
+            <Link href="/about" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/about") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }}>About</Link>
             {isAuthenticated ? (
-              // Authenticated User Menu
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/dashboard"
-                  className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-houselook-blue ${
-                    isActive("/dashboard")
-                      ? "text-houselook-white bg-houselook-cyan shadow-cyan-glow"
-                      : "text-houselook-indigo hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                  }`}
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Link>
-                <Link href="/list-property">
-                  <Button className="bg-houselook-indigo hover:bg-houselook-teal text-houselook-white font-bold px-6 py-2 rounded-lg shadow-soft hover:shadow-indigo-glow transition-all duration-300 hover:scale-105">
-                    <Plus className="w-4 h-4 mr-2" />
-                    List Property
-                  </Button>
-                </Link>
-              </div>
+              user && user.isAdmin ? (
+                <Link href="/admin" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/admin") ? "text-houselook-indigo" : "text-houselook-darkGray hover:text-houselook-indigo"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}>Admin</Link>
+              ) : (
+                <Link href="/dashboard" className={`font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive("/dashboard") ? "text-houselook-indigo" : "text-houselook-darkGray hover:text-houselook-indigo"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}>Dashboard</Link>
+              )
+            ) : null}
+          </div>
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-3" style={{ pointerEvents: 'auto' }}>
+            {isAuthenticated ? (
+              <Link href="/list-property">
+                <Button className="bg-transparent text-houselook-indigo font-bold px-5 py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Brush Script MT, cursive', boxShadow: 'none' }}>List Property</Button>
+              </Link>
             ) : (
-              // Guest User Menu
-              <div className="flex items-center space-x-4">
+              <>
                 <Link href="/login">
-                  <Button
-                    variant="outline"
-                    className="border-houselook-coolGray text-houselook-darkGray hover:text-houselook-cyan hover:border-houselook-cyan font-semibold px-6 py-2 rounded-lg transition-all duration-300"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Login
-                  </Button>
+                  <Button variant="ghost" className="text-houselook-cyan font-bold px-5 py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Perpetua, serif', boxShadow: 'none' }}>Login</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="bg-houselook-cyan hover:bg-houselook-teal text-houselook-black font-bold px-6 py-2 rounded-lg shadow-soft hover:shadow-cyan-glow transition-all duration-300 hover:scale-105">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Sign Up
-                  </Button>
+                  <Button className="bg-transparent text-houselook-cyan font-bold px-5 py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Brush Script MT, cursive', boxShadow: 'none' }}>Sign Up</Button>
                 </Link>
-              </div>
+              </>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-houselook-darkGray hover:text-houselook-cyan p-2 rounded-lg"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {/* Mobile Hamburger */}
+          <div className="md:hidden flex items-center" style={{ pointerEvents: 'auto' }}>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="text-blue-600">
+              {isOpen ? <X className="w-6 h-6" color="#2563eb" /> : <Menu className="w-6 h-6" color="#2563eb" />}
             </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
+        {/* Mobile Drawer */}
         {isOpen && (
-          <div className="md:hidden py-6 bg-houselook-white/95 backdrop-blur-md rounded-2xl mt-4 border border-houselook-coolGray/20 shadow-soft-lg">
-            <div className="flex flex-col space-y-2 px-6">
-              <Link
-                href="/"
-                className={`flex items-center px-4 py-3 rounded-lg transition-all duration-300 font-semibold ${
-                  isActive("/")
-                    ? "text-houselook-cyan bg-houselook-aliceblue"
-                    : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Home className="w-5 h-5 mr-3" />
-                Home
+          <div className="md:hidden absolute top-16 left-0 right-0 flex flex-col items-center space-y-2 py-6 bg-transparent" style={{ pointerEvents: 'auto' }}>
+            <Link href="/" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>Home</Link>
+            <Link href="/listings" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/listings") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>Browse</Link>
+            <Link href="/saved" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/saved") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>Saved</Link>
+            <Link href="/about" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/about") ? "text-houselook-cyan" : "text-houselook-blue hover:text-houselook-cyan"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>About</Link>
+            {isAuthenticated ? (
+              user && user.isAdmin ? (
+                <Link href="/admin" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/admin") ? "text-houselook-indigo" : "text-houselook-darkGray hover:text-houselook-indigo"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>Admin</Link>
+              ) : (
+                <Link href="/dashboard" className={`font-bold px-4 py-2 rounded-lg w-full text-center ${isActive("/dashboard") ? "text-houselook-indigo" : "text-houselook-darkGray hover:text-houselook-indigo"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }} onClick={() => setIsOpen(false)}>Dashboard</Link>
+              )
+            ) : null}
+            {isAuthenticated ? (
+              <Link href="/list-property" className="w-full" onClick={() => setIsOpen(false)}>
+                <Button className="w-full bg-transparent text-houselook-indigo font-bold py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Brush Script MT, cursive', boxShadow: 'none' }}>List Property</Button>
               </Link>
-
-              <Link
-                href="/listings"
-                className={`flex items-center px-4 py-3 rounded-lg transition-all duration-300 font-semibold ${
-                  isActive("/listings")
-                    ? "text-houselook-cyan bg-houselook-aliceblue"
-                    : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Search className="w-5 h-5 mr-3" />
-                Browse Houses
-              </Link>
-
-              <Link
-                href="/about"
-                className={`flex items-center px-4 py-3 rounded-lg transition-all duration-300 font-semibold ${
-                  isActive("/about")
-                    ? "text-houselook-cyan bg-houselook-aliceblue"
-                    : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                <Info className="w-5 h-5 mr-3" />
-                About
-              </Link>
-
-              <div className="border-t border-houselook-coolGray/20 pt-4 mt-4">
-                {isAuthenticated ? (
-                  <div className="space-y-2">
-                    <Link
-                      href="/dashboard"
-                      className={`flex items-center px-4 py-3 rounded-lg transition-all duration-300 font-semibold ${
-                        isActive("/dashboard")
-                          ? "text-houselook-cyan bg-houselook-aliceblue"
-                          : "text-houselook-darkGray hover:text-houselook-cyan hover:bg-houselook-aliceblue"
-                      }`}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <User className="w-5 h-5 mr-3" />
-                      Dashboard
-                    </Link>
-                    <Link href="/list-property" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-houselook-indigo hover:bg-houselook-teal text-houselook-white font-bold py-3 rounded-lg shadow-soft transition-all duration-300">
-                        <Plus className="w-5 h-5 mr-2" />
-                        List Property
-                      </Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Link href="/login" onClick={() => setIsOpen(false)}>
-                      <Button
-                        variant="outline"
-                        className="w-full border-houselook-coolGray text-houselook-darkGray hover:text-houselook-cyan font-semibold py-3 rounded-lg"
-                      >
-                        <LogIn className="w-5 h-5 mr-2" />
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/signup" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-houselook-cyan hover:bg-houselook-teal text-houselook-black font-bold py-3 rounded-lg shadow-soft transition-all duration-300">
-                        <UserPlus className="w-5 h-5 mr-2" />
-                        Sign Up
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
+            ) : (
+              <>
+                <Link href="/login" className="w-full" onClick={() => setIsOpen(false)}>
+                  <Button variant="ghost" className="w-full text-houselook-cyan font-bold py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Perpetua, serif', boxShadow: 'none' }}>Login</Button>
+                </Link>
+                <Link href="/signup" className="w-full" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-transparent text-houselook-cyan font-bold py-2 rounded-lg transition-all duration-200" style={{ fontFamily: 'Brush Script MT, cursive', boxShadow: 'none' }}>Sign Up</Button>
+                </Link>
+              </>
+            )}
           </div>
         )}
+      </div>
+      {/* Bottom nav for mobile - floating, no background, border, or shadow */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden flex justify-around py-2 bg-transparent" style={{ pointerEvents: 'auto' }}>
+        <Link href="/" className={`flex flex-col items-center ${isActive("/") ? "text-houselook-cyan" : "text-houselook-blue"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}><Home className="w-6 h-6" /></Link>
+        <Link href="/listings" className={`flex flex-col items-center ${isActive("/listings") ? "text-houselook-cyan" : "text-houselook-blue"}`} style={{ fontFamily: 'Perpetua, serif', background: 'none', boxShadow: 'none' }}><Search className="w-6 h-6" /></Link>
+        <Link href="/saved" className={`flex flex-col items-center ${isActive("/saved") ? "text-houselook-cyan" : "text-houselook-blue"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }}><Heart className="w-6 h-6" /></Link>
+        <Link href="/about" className={`flex flex-col items-center ${isActive("/about") ? "text-houselook-cyan" : "text-houselook-blue"}`} style={{ fontFamily: 'Comic Sans MS, Comic Sans, cursive, sans-serif', background: 'none', boxShadow: 'none' }}><Info className="w-6 h-6" /></Link>
       </div>
     </nav>
   )
